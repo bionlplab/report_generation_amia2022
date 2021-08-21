@@ -1,0 +1,40 @@
+normal / no indexing
+cardiomegaly
+scoliosis / degenerative
+fractures bone / fractures / fracture bones / fracture bone
+pleural effusion / pleural effusions
+thickening
+pneumothorax
+hernia hiatal / hernia
+calcinosis
+emphysema / pulmonary emphysema
+pneumonia / infiltrate / consolidation
+pulmonary edema / edema
+pulmonary atelectasis / atelectasis
+cicatrix / scar / scars
+opacity / opacities
+nodule / mass / nodules
+airspace disease
+hypoinflation / hyperdistention
+catheters indwelling / surgical instruments / tube inserted / medical device / surgical instrument / medical devices / tubes
+others
+chest pain
+shortness of breath
+granuloma
+lymphadenopathy
+deformity
+granulomatous disease
+congestion
+tuberculosis
+infection
+hypertension
+osteophyte
+calcification / calcified
+enlargement
+asthma
+injury
+malignant neoplastic disease
+vomiting
+eventration
+metastatic disease
+fibrosis
