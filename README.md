@@ -32,5 +32,5 @@ If you find our work helpful, please cite:
 ## Acknowledgement
 This work is supported by Amazon Machine Learning Research Award 2020. It was also supported by the National Library of Medicine under Award No. 4R00LM013001. 
 
-We also appreciate the authors of [When Radiology Report Generation Meets Knowledge Graph](https://arxiv.org/abs/2002.08277) for providing the codes.
+Special thanks to the authors of [When Radiology Report Generation Meets Knowledge Graph](https://arxiv.org/abs/2002.08277) for providing the codes.
 
