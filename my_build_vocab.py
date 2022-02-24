@@ -3,6 +3,7 @@ import json
 import pickle
 from collections import Counter
 import nltk
+from constants import FOLDER
 
 class Vocabulary(object):
     """Simple vocabulary wrapper."""
@@ -27,10 +28,8 @@ class Vocabulary(object):
 
 
 if __name__ == '__main__':
-
-    folder = '/home/sw37643/ReportGenerationMeetsGraph/data/'
     
-    with open( folder + 'reports.json') as f:
+    with open( FOLDER + 'reports.json') as f:
         reports = json.load(f)
 
     counter = Counter()
@@ -46,12 +45,6 @@ if __name__ == '__main__':
         text = text.replace('.', ' .')
         tokens = text.strip().split()
 
-        # tokens = []
-        # if report['findings'] is not None:
-        #     tokens = nltk.tokenize.word_tokenize(report['findings'].lower())
-        # if report['impression'] is not None:
-        #     tokens.extend(nltk.tokenize.word_tokenize(report['impression'].lower()))
-
         counter.update(tokens)
     words = [word for word, cnt in counter.items() if cnt >= 3]
 
@@ -62,10 +55,9 @@ if __name__ == '__main__':
     vocab.add_word('<unk>')
 
     for word in words:
-        #print(word)
         vocab.add_word(word)
 
-    with open(folder + 'vocab.pkl', 'wb') as f:
+    with open( FOLDER + 'vocab.pkl', 'wb') as f:
         pickle.dump(vocab, f)
 
     print('Total vocabulary size {}. Saved to {}'.format(len(vocab), 'vocab.pkl'))

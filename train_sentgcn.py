@@ -16,26 +16,24 @@ import time
 import statistics
 from utils import *
 from process_emb import WordEmbeddings, read_word_embeddings, relativize, relativize_data, text_to_id
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
-folder = '/home/sw37643/ReportGenerationMeetsGraph/'
+from constants import FOLDER
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--name', type=str, required=True)
-    parser.add_argument('--model-dir', type=str, default= folder + 'models')
-    parser.add_argument('--output-dir', type=str, default= folder + 'output/openi_top30')
-    parser.add_argument('--pretrained', type=str, default= folder + 'models/gcnclassifier_40keywords_residual_gcn_t234v0t1_e15.pth')
+    parser.add_argument('--model-dir', type=str, default= FOLDER + 'models')
+    parser.add_argument('--output-dir', type=str, default= FOLDER + 'output/openi_top30')
+    parser.add_argument('--pretrained', type=str, default= FOLDER + 'models/gcnclassifier_30keywords_train234val0test1_e15.pth')
     parser.add_argument('--checkpoint', type=str, default='')
-    parser.add_argument('--dataset-dir', type=str, default= folder + 'data/NLMCXR_png')
+    parser.add_argument('--dataset-dir', type=str, default= FOLDER + 'data/openi')
     parser.add_argument('--train-folds', type=str, default='012')
     parser.add_argument('--val-folds', type=str, default='3')
     parser.add_argument('--test-folds', type=str, default='4')
-    parser.add_argument('--report-path', type=str, default= folder + 'data/reports.json')
-    parser.add_argument('--vocab-path', type=str, default= folder + 'data/vocab.pkl')
-    parser.add_argument('--label-path', type=str, default= folder + 'data/label_dict.json')
-    parser.add_argument('--log-dir', type=str, default= folder + 'logs/openi_top30')
+    parser.add_argument('--report-path', type=str, default= FOLDER + 'data/reports.json')
+    parser.add_argument('--vocab-path', type=str, default= FOLDER + 'data/vocab.pkl')
+    parser.add_argument('--label-path', type=str, default= FOLDER + 'data/label_dict.json')
+    parser.add_argument('--log-dir', type=str, default= FOLDER + 'logs/openi_top30')
     parser.add_argument('--log-freq', type=int, default=1)
     parser.add_argument('--num-epochs', type=int, default=100)
     parser.add_argument('--seed', type=int, default=123)
@@ -44,9 +42,7 @@ def get_args():
     parser.add_argument('--batch-size', type=int, default=8)
     parser.add_argument('--gpus', type=str, default='0')
 
-    #parser.add_argument('--num_classes', type=int, default=40)
     parser.add_argument('--num_classes', type=int, default=30)
-    #parser.add_argument('--num_classes', type=int, default=20)
     parser.add_argument('--clip-value', type=float, default=5.0)
 
     args = parser.parse_args()
@@ -66,8 +62,7 @@ if __name__ == '__main__':
     for k, v in vars(args).items():
         logging.info('{}: {}'.format(k, v))
 
-    writer = SummaryWriter(log_dir=os.path.join( folder + 'runs/openi_top30', args.name))
-    #writer = SummaryWriter(log_dir=os.path.join( folder + 'runs/baseline', args.name))
+    writer = SummaryWriter(log_dir=os.path.join( FOLDER + 'runs/openi_top30', args.name))
 
     gpus = [int(_) for _ in list(args.gpus)]
     device = torch.device('cuda:{}'.format(gpus[0]) if torch.cuda.is_available() else 'cpu')
@@ -77,8 +72,7 @@ if __name__ == '__main__':
     with open(args.vocab_path, 'rb') as f:
         vocab = pickle.load(f)
         
-    embs = read_word_embeddings( folder + "data/embedding/glove.6B.200d-relativized.txt")
-    #embs = read_word_embeddings( folder + "data/embedding/full_omop_fasttext_w2v-relativized.txt")
+    embs = read_word_embeddings( FOLDER + "data/embedding/glove.6B.200d-relativized.txt")
     
     train_set = Biview_MultiSent('train', args.dataset_dir, args.train_folds, args.report_path, args.vocab_path, args.label_path, embs)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=8, collate_fn=sent_collate_fn)
@@ -87,9 +81,7 @@ if __name__ == '__main__':
     test_set = Biview_MultiSent('test', args.dataset_dir, args.test_folds, args.report_path, args.vocab_path, args.label_path, embs)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=1, collate_fn=sent_collate_fn)
 
-    #with open( folder + 'data/openi_top40/openi_matrix_40nodes_binary.txt','r') as matrix_file:
-    #    adjacency_matrix = [[int(num) for num in line.split(',')] for line in matrix_file]
-    with open( folder + 'data/openi_top30/auxillary_openi_matrix_30nodes.txt','r') as matrix_file:
+    with open( FOLDER + 'data/openi_top30/auxillary_openi_matrix_30nodes.txt','r') as matrix_file:
         adjacency_matrix = [[int(num) for num in line.split(',')] for line in matrix_file]
 
     fw_adj = torch.tensor(adjacency_matrix, dtype=torch.float, device=device)
@@ -97,31 +89,6 @@ if __name__ == '__main__':
     bw_adj = fw_adj.t()
     fw_adj = fw_adj.add(identity_matrix)
     bw_adj = bw_adj.add(identity_matrix)
-
-    #fw_adj = torch.tensor([
-    #    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #], dtype=torch.float, device=device)
-    #bw_adj = fw_adj.t()
 
     model = SentGCN(args.num_classes, fw_adj, bw_adj, len(vocab), embs).to(device)
 

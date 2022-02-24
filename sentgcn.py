@@ -62,15 +62,12 @@ class GraphConvolution(nn.Module):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        #self.weight = Parameter(torch.FloatTensor(8, in_features, out_features))
 
         if bias:
             self.bias = Parameter(torch.FloatTensor(out_features))
         else:
             self.register_parameter('bias', None)
             
-        #self.reset_parameters_xavier()
-
     def reset_parameters_xavier(self):
         nn.init.xavier_normal_(self.weight.data, gain=0.02) # Implement Xavier Uniform
         if self.bias is not None:
@@ -126,7 +123,7 @@ class GraphConvolutionLayer(nn.Module):
         return x
 
 
-class GCN_new(nn.Module):
+class GCN(nn.Module):
 
     def __init__(self, in_size, state_size):
         super(GCN_new, self).__init__()
@@ -167,26 +164,6 @@ class GCLayer(nn.Module):
         return updated
 
 
-class GCN(nn.Module):
-
-    def __init__(self, in_size, state_size, steps=3):
-        super().__init__()
-        self.in_size = in_size
-        self.state_size = state_size
-        self.steps = steps
-
-        self.layer1 = GCLayer(in_size, state_size)
-        self.layer2 = GCLayer(in_size, state_size)
-        self.layer3 = GCLayer(in_size, state_size)
-
-    def forward(self, states, fw_A, bw_A):
-        states = states.permute(0, 2, 1)
-        states = self.layer1(states, fw_A, bw_A)
-        states = self.layer2(states, fw_A, bw_A)
-        states = self.layer3(states, fw_A, bw_A)
-        return states.permute(0, 2, 1)
-
-
 class SentGCN(nn.Module):
 
     # random embeddings with dimension 256
@@ -205,10 +182,7 @@ class SentGCN(nn.Module):
         self.densenet121.classifier = nn.Linear(feat_size, num_classes)
         self.cls_atten = ClsAttention(feat_size, num_classes)
         
-        # original GCN
-        #self.gcn = GCN(feat_size, feat_size // 4, steps=3)
-        # our new GCN
-        self.gcn = GCN_new(feat_size, feat_size//4)
+        self.gcn = GCN(feat_size, feat_size//4)
         self.atten = Attention(hidden_size, feat_size)
 
         # random embeddings

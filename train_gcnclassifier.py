@@ -14,25 +14,23 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
-
-os.environ["CUDA_VISIBLE_DEVICES"]= "3"
-folder = '/home/sw37643/ReportGenerationMeetsGraph/'
+from constants import FOLDER
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--name', type=str, required=True)
-    parser.add_argument('--model-path', type=str, default= folder + 'models')
-    parser.add_argument('--pretrained', type=str, default= folder + 'models/pretrained/model_ones_3epoch_densenet.tar')
+    parser.add_argument('--model-path', type=str, default= FOLDER + 'models')
+    parser.add_argument('--pretrained', type=str, default= FOLDER + 'models/pretrained/model_ones_3epoch_densenet.tar')
     parser.add_argument('--checkpoint', type=str, default='')
-    parser.add_argument('--dataset-dir', type=str, default= folder + 'data/NLMCXR_png')
+    parser.add_argument('--dataset-dir', type=str, default= FOLDER + 'data/openi')
     parser.add_argument('--train-folds', type=str, default='012')
     parser.add_argument('--val-folds', type=str, default='3')
     parser.add_argument('--test-folds', type=str, default='4')
-    parser.add_argument('--report-path', type=str, default= folder + 'data/reports.json')
-    parser.add_argument('--vocab-path', type=str, default= folder + 'data/vocab.pkl')
-    parser.add_argument('--label-path', type=str, default= folder + 'data/label_dict.json')
-    parser.add_argument('--log-path', type=str, default= folder + 'logs')
+    parser.add_argument('--report-path', type=str, default= FOLDER + 'data/reports.json')
+    parser.add_argument('--vocab-path', type=str, default= FOLDER + 'data/vocab.pkl')
+    parser.add_argument('--label-path', type=str, default= FOLDER + 'data/label_dict.json')
+    parser.add_argument('--log-path', type=str, default= FOLDER + 'logs')
     parser.add_argument('--log-freq', type=int, default=1)
     parser.add_argument('--num-epochs', type=int, default=100)
     parser.add_argument('--seed', type=int, default=123)
@@ -40,10 +38,7 @@ def get_args():
     parser.add_argument('--batch-size', type=int, default=8)
     parser.add_argument('--gpus', type=str, default='0')
     parser.add_argument('--clip-value', type=float, default=5.0)
-
-    #parser.add_argument('--num-classes', type=int, default=20)
     parser.add_argument('--num-classes', type=int, default=30)
-    #parser.add_argument('--num-classes', type=int, default=40)
 
     args = parser.parse_args()
 
@@ -62,22 +57,15 @@ if __name__ == '__main__':
     for k, v in vars(args).items():
         logging.info('{}: {}'.format(k, v))
 
-    writer = SummaryWriter(log_dir=os.path.join( folder + 'runs/openi_top30', args.name))
-    #writer = SummaryWriter(log_dir=os.path.join( folder + 'runs/openi_top40', args.name))
+    writer = SummaryWriter(log_dir=os.path.join( FOLDER + 'runs/openi_top30', args.name))
 
     device = torch.device('cuda:{}'.format(args.gpus[0]) if torch.cuda.is_available() else 'cpu')
     gpus = [int(_) for _ in list(args.gpus)]
     torch.manual_seed(args.seed)
 
-    #with open( folder + 'data/19class_keywords.txt') as f:
-    #    keywords = f.read().splitlines()
-
-    with open( folder + 'data/openi_top30/openi_30keywords.txt') as f:
+    with open( FOLDER + 'data/openi_top30/openi_30keywords.txt') as f:
         keywords = f.read().splitlines()
     keywords.append('others')
-
-    #with open( folder + 'data/openi_top40/openi_40keywords.txt') as f:
-    #    keywords = f.read().splitlines()
 
     train_set = Biview_Classification('train', args.dataset_dir, args.train_folds, args.label_path)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=8)
@@ -86,39 +74,9 @@ if __name__ == '__main__':
     test_set = Biview_Classification('test', args.dataset_dir, args.test_folds, args.label_path)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=1)
 
-    with open( folder + 'data/openi_top30/auxillary_openi_matrix_30nodes.txt','r') as matrix_file:
+    with open( FOLDER + 'data/openi_top30/auxillary_openi_matrix_30nodes.txt','r') as matrix_file:
         adjacency_matrix = [[int(num) for num in line.split(', ')] for line in matrix_file]
     
-    #with open( folder + 'data/openi_top40/openi_matrix_40nodes_binary.txt','r') as matrix_file:
-    #    adjacency_matrix = [[int(num) for num in line.split(', ')] for line in matrix_file]
-    
-    # original GCN
-    #fw_adj = torch.tensor([
-    #    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #], dtype=torch.float, device=device)
-    #bw_adj = fw_adj.t()
-
-    # our new GCN
     fw_adj = torch.tensor(adjacency_matrix, dtype=torch.float, device=device)
     bw_adj = fw_adj.t()
     identity_matrix = torch.eye(args.num_classes+1, device=device)
@@ -193,8 +151,6 @@ if __name__ == '__main__':
             model.eval()
             y = torch.zeros((len(val_set), 20), dtype=torch.int)
             y_score = torch.zeros((len(val_set), 20), dtype=torch.float)
-            #y = torch.zeros((len(val_set), args.num_classes), dtype=torch.int)
-            #y_score = torch.zeros((len(val_set), args.num_classes), dtype=torch.float)
             with torch.no_grad():
                 for i, (images1, images2, labels) in enumerate(val_loader):
                     images1, images2 = images1.to(device), images2.to(device)
@@ -216,8 +172,6 @@ if __name__ == '__main__':
             # test
             y = torch.zeros((len(test_set), 20), dtype=torch.int)
             y_score = torch.zeros((len(test_set), 20), dtype=torch.float)
-            #y = torch.zeros((len(test_set), args.num_classes), dtype=torch.int)
-            #y_score = torch.zeros((len(test_set), args.num_classes), dtype=torch.float)
             with torch.no_grad():
                 for i, (images1, images2, labels) in enumerate(test_loader):
                     images1, images2 = images1.to(device), images2.to(device)
@@ -239,11 +193,8 @@ if __name__ == '__main__':
             df = np.stack([p, r, f, roc_auc], axis=1)
             df = pd.DataFrame(df, columns=['precision', 'recall', 'f1', 'auc'])
 
-            #df_keywords = keywords[:19].append('others')
             df_keywords = keywords[:20]
-            #df.insert(0, 'name', keywords)
             df.insert(0, 'name', df_keywords)
-            df.to_csv(os.path.join( folder + 'output/openi_top30', args.name + '_e{}.csv'.format(epoch)))
-            #df.to_csv(os.path.join( folder + 'output/openi_top40', args.name + '_e{}.csv'.format(epoch)))
+            df.to_csv(os.path.join( FOLDER + 'output/openi_top30', args.name + '_e{}.csv'.format(epoch)))
 
     writer.close()

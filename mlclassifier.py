@@ -11,7 +11,6 @@ class MLClassifier(nn.Module):
         super().__init__()
         self.densenet121 = models.densenet121(pretrained=True)
         num_ftrs = self.densenet121.classifier.in_features
-        # self.backbone = nn.Sequential(*list(densenet.children())[:-1])
         self.densenet121.classifier = nn.Linear(num_ftrs, num_classes)
 
     def forward(self, img1, img2):
@@ -140,8 +139,7 @@ class GraphConvolutionLayer(nn.Module):
 
         return x
 
-# our new GCN
-class GCN_new(nn.Module):
+class GCN(nn.Module):
 
     def __init__(self, in_size, state_size):
         super(GCN_new, self).__init__()
@@ -161,27 +159,6 @@ class GCN_new(nn.Module):
         
         return states.permute(0,2,1)
 
-# original GCN
-class GCN(nn.Module):
-
-    def __init__(self, in_size, state_size, steps=3):
-        super().__init__()
-        self.in_size = in_size
-        self.state_size = state_size
-        self.steps = steps
-
-        self.layer1 = GCLayer(in_size, state_size)
-        self.layer2 = GCLayer(in_size, state_size)
-        self.layer3 = GCLayer(in_size, state_size)
-
-    def forward(self, states, fw_A, bw_A):
-        states = states.permute(0, 2, 1)
-        states = self.layer1(states, fw_A, bw_A)
-        states = self.layer2(states, fw_A, bw_A)
-        states = self.layer3(states, fw_A, bw_A)
-        return states.permute(0, 2, 1)
-
-
 class GCNClassifier(nn.Module):
 
     def __init__(self, num_classes, fw_adj, bw_adj):
@@ -193,11 +170,7 @@ class GCNClassifier(nn.Module):
         self.densenet121.classifier = nn.Linear(feat_size, num_classes)
         self.cls_atten = ClsAttention(feat_size, num_classes)
 
-        # original GCN
-        #self.gcn = GCN(feat_size, 256)
-
-        # our new GCN
-        self.gcn = GCN_new(feat_size, 256)
+        self.gcn = GCN(feat_size, 256)
 
         self.fc2 = nn.Linear(feat_size, num_classes)
 

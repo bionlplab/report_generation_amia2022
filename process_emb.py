@@ -42,8 +42,6 @@ def read_word_embeddings(embeddings_file: str) -> WordEmbeddings:
     word_indexer.add_and_get_index("<pad>")
     word_indexer.add_and_get_index("<start>")
     word_indexer.add_and_get_index("<end>")
-    #word_indexer.add_and_get_index("<unk>")
-    #vectors.append(np.random.randn(200))
     vectors.append(np.random.randn(200))
     vectors.append(np.random.randn(200))
     vectors.append(np.random.randn(200))
