@@ -19,7 +19,6 @@ class Encoder(nn.Module):
         x = F.relu(x)
         return x
 
-
 class Attention(nn.Module):
 
     def __init__(self, k_size, v_size, affine_size=512):
