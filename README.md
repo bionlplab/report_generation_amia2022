@@ -1,9 +1,5 @@
 # Prior Knowledge Enhances Radiology Report Generation
 
-[AMIA Informatics Summit 2022] [Prior Knowledge Enhances Radiology Report Generation](https://arxiv.org/abs/2201.03761)
-
-Song Wang, Liyan Tang, Mingquan Lin, George Shih, Ying Ding, Yifan Peng
-
 ## Overview
 
 The proposed model is defined in `sentgcn.py`. 
