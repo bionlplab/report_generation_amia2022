@@ -16,16 +16,8 @@ To train the gcnclassifier, you would need a DenseNet-121 model pretrained on Ch
 
 ## Citation
 If you find our work helpful, please cite:
-```
-@misc{wang2022prior,
-      title={Prior Knowledge Enhances Radiology Report Generation}, 
-      author={Song Wang and Liyan Tang and Mingquan Lin and George Shih and Ying Ding and Yifan Peng},
-      year={2022},
-      eprint={2201.03761},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
-}
-```
+
+Wang S, Tang L, Lin M, Shih G, Ding Y, Peng Y. Prior Knowledge Enhances Radiology Report Generation. AMIA Jt Summits Transl Sci Proc. 2022 May 23;2022:486-495. PMID: 35854760; PMCID: PMC9285179.
 
 ## Acknowledgement
 This work is supported by Amazon Machine Learning Research Award 2020. It was also supported by the National Library of Medicine under Award No. 4R00LM013001. 
